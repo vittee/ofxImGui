@@ -69,6 +69,10 @@ void EngineGLFW::setup()
     GLFWwindow* glfwWindow = appWindow->getGLFWWindow();
     glfwSetCharCallback(glfwWindow, EngineGLFWHelper::ImGui_ImplGlfw_CharCallback);
 
+#if defined(TARGET_WIN32)
+    io.ImeWindowHandle = appWindow->getWin32Window();
+#endif
+
     isSetup = true;
 }
 
