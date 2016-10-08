@@ -18,6 +18,7 @@ public:
 
     bool createFontsTexture();
     
+    void onKeyPressed(ofKeyEventArgs& event) override;
     void onKeyReleased(ofKeyEventArgs& event) override;
     void onMousePressed(ofMouseEventArgs& event) override;
     void onMouseReleased(ofMouseEventArgs& event) override;
@@ -28,5 +29,8 @@ public:
 
     static GLuint g_FontTexture;
     static unsigned int g_VaoHandle;
+
+protected:
+    void translateModifierKeys();
 };
 #endif

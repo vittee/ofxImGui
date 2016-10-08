@@ -5,6 +5,15 @@
 GLuint EngineGLFW::g_FontTexture = 0;
 unsigned int EngineGLFW::g_VaoHandle = 0;
 
+namespace EngineGLFWHelper {
+    void ImGui_ImplGlfw_CharCallback(GLFWwindow*, unsigned int c)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        if (c > 0 && c < 0x10000)
+            io.AddInputCharacter((unsigned short)c);
+    }
+}
+
 void EngineGLFW::setup()
 {
     if(isSetup) return;
@@ -54,6 +63,11 @@ void EngineGLFW::setup()
     ofAddListener(ofEvents().keyPressed, (BaseEngine*)this, &BaseEngine::onKeyPressed);
     ofAddListener(ofEvents().mouseScrolled, (BaseEngine*)this, &BaseEngine::onMouseScrolled);
     ofAddListener(ofEvents().windowResized, (BaseEngine*)this, &BaseEngine::onWindowResized);
+
+    // extended setup    
+    ofAppGLFWWindow* appWindow = (ofAppGLFWWindow*)ofGetMainLoop()->getCurrentWindow().get();
+    GLFWwindow* glfwWindow = appWindow->getGLFWWindow();
+    glfwSetCharCallback(glfwWindow, EngineGLFWHelper::ImGui_ImplGlfw_CharCallback);
 
     isSetup = true;
 }
@@ -290,19 +304,37 @@ void EngineGLFW::fixedRenderDrawLists(ImDrawData * draw_data)
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
 }
 
+void EngineGLFW::translateModifierKeys()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.KeyCtrl = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
+    io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT] || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
+    io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
+    io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
+}
+
+void EngineGLFW::onKeyPressed(ofKeyEventArgs & event)
+{
+    BaseEngine::onKeyPressed(event);
+    translateModifierKeys();
+}
+
 void EngineGLFW::onKeyReleased(ofKeyEventArgs& event)
 {
     int key = event.keycode;
     ImGuiIO& io = ImGui::GetIO();
     io.KeysDown[key] = false;
     
-    io.KeyCtrl  = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
-    io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT]   || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
-    io.KeyAlt   = io.KeysDown[GLFW_KEY_LEFT_ALT]     || io.KeysDown[GLFW_KEY_RIGHT_ALT];
-    if(key < GLFW_KEY_ESCAPE)
-    {
-        io.AddInputCharacter((unsigned short)event.codepoint);
-    }
+    //io.KeyCtrl  = io.KeysDown[GLFW_KEY_LEFT_CONTROL] || io.KeysDown[GLFW_KEY_RIGHT_CONTROL];
+    //io.KeyShift = io.KeysDown[GLFW_KEY_LEFT_SHIFT]   || io.KeysDown[GLFW_KEY_RIGHT_SHIFT];
+    //io.KeyAlt   = io.KeysDown[GLFW_KEY_LEFT_ALT]     || io.KeysDown[GLFW_KEY_RIGHT_ALT];
+    //if(key < GLFW_KEY_ESCAPE)
+    //{
+    //    io.AddInputCharacter((unsigned short)event.codepoint);
+    //}
+
+    translateModifierKeys();
 }
 
 bool EngineGLFW::createDeviceObjects()
