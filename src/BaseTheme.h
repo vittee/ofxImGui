@@ -15,7 +15,7 @@ public:
     virtual void setup();
     void themeColorsWindow(bool isOpen);
 
-    void updateColors();
+    virtual void updateColors();
     
     ofColor col_main_text;
     ofColor col_main_head;
